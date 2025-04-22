@@ -1,0 +1,4 @@
+exportPattern("^[[:alpha:]]+")
+S3method(wr.test, default)
+S3method(print, wr.test)
+importFrom("stats", "rnorm", "qnorm", "pchisq")
