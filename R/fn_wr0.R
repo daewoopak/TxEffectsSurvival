@@ -1,45 +1,75 @@
 fn_wr0 <- function(yh, hcen, yd, dcen, zo) {
 
+  loc <- order(zo)
+  zoct <- zo[loc]
+  ydct <- yd[loc]
+  dcenct <- dcen[loc]
+  yhct <- yh[loc]
+  hcenct <- hcen[loc]
+
   n <- length(zo)
+  n2 <- sum(zo)
+  n1 <- n - n2
 
-  w1 <- l1 <- w2 <- l2 <- w1o <- l1o <- sig2o <- sig1o <- sig1 <- c()
-  for (i in 1:n) {
-    w2ij <- dcen * (yd[i] >= yd)
-    l2ij <- dcen[i] * (yd[i] <= yd)
+  s1 <- matrix(1, nrow = n1, ncol = n2)
+  s2 <- matrix(1, nrow = n1, ncol = n2)
+  tdw <- s1; thw <- s1; tdl <- s1; thl <- s1
 
-    w1ij <- hcen * (yh[i] >= yh)
-    l1ij <- hcen[i] * (yh[i] <= yh)
-
-    w1ijo <- (1 - w2ij) * (1 - l2ij) * w1ij
-    l1ijo <- (1 - w2ij) * (1 - l2ij) * l1ij
-
-    w1[i] <- sum(zo[i] * (1 - zo) * w1ij)
-    l1[i] <- sum(zo[i] * (1 - zo) * l1ij)
-
-    w2[i] <- sum(zo[i] * (1 - zo) * w2ij)
-    l2[i] <- sum(zo[i] * (1 - zo) * l2ij)
-
-    w1o[i] <- sum(zo[i] * (1 - zo) * w1ijo)
-    l1o[i] <- sum(zo[i] * (1 - zo) * l1ijo)
-
-    sig2o[i] <- mean((zo[i] - zo) * (w2ij - l2ij))
-    sig1o[i] <- mean((zo[i] - zo) * (1 - w2ij) * (1 - l2ij) * (w1ij - l1ij))
-    sig1[i] <- mean((zo[i] - zo) * (w1ij - l1ij))
+  for(ci in 1:n1){
+    tdw[ci, ] <- dcenct[ci] * (ydct[ci] <= ydct[n1 + (1:n2)])
+    thw[ci, ] <- hcenct[ci] * (yhct[ci] <= yhct[n1 + (1:n2)])
+    tdl[ci, ] <- dcenct[n1 + (1:n2)] * (ydct[n1 + (1:n2)] <= ydct[ci])
+    thl[ci, ] <- hcenct[n1 + (1:n2)] * (yhct[n1 + (1:n2)] <= yhct[ci])
   }
 
-  sigd <- sqrt(mean((sig1o + sig2o)^2) / n)
-  wd <- (-sum(l2 + l1o) + sum(w2 + w1o)) / n^2
-  zwr <- wd / sigd
+  s2 <- tdl + (1 - tdl) * (1 - tdw) * thl
+  s1 <- tdw + (1 - tdl) * (1 - tdw) * thw
 
-  # pvawr <- mean(abs(ak) > abs(zwr))
-  pvawr <- 2 * pnorm(abs(zwr), lower.tail = FALSE)
+  s1i <- rowSums(s1)
+  s2i <- rowSums(s2)
+  s1j <- colSums(s1)
+  s2j <- colSums(s2)
+
+  win <- mean(s1)
+  los <- mean(s2)
+
+  pwxyyp <- sum(s1i * (s1i - 1)) / (n1 * n2 * (n1 - 1))
+  pwxxpy <- sum(s1j * (s1j - 1)) / (n1 * n2 * (n2 - 1))
+  plxyyp <- sum(s2i * (s2i - 1)) / (n1 * n2 * (n1 - 1))
+  plxxpy <- sum(s2j * (s2j - 1)) / (n1 * n2 * (n2 - 1))
+  pmxyyp <- sum(s1i * (s2i - 1)) / (n1 * n2 * (n1 - 1))
+  pmxxpy <- sum(s1j * (s2j - 1)) / (n1 * n2 * (n2 - 1))
+
+  ts <- n2 / n
+  cs <- 1 - ts
+
+  xi1110 <- pwxyyp - win^2
+  xi1210 <- pmxyyp - win * los
+  xi2210 <- plxyyp - los^2
+
+  xi1101 <- pwxxpy - win^2
+  xi1201 <- pmxxpy - win * los
+  xi2201 <- plxxpy - los^2
+
+  sig11 <- xi1110 / ts + xi1101 / cs
+  sig12 <- xi1210 / ts + xi1201 / cs
+  sig22 <- xi2210 / ts + xi2201 / cs
+
+  wr <- los / win
+  siglog <- sig11 / win^2 + sig22 / los^2 - 2 * sig12 / (los * win)
+
+  wci <- c(wr * exp(-1.96 * sqrt(siglog / n)), wr * exp(1.96 * sqrt(siglog / n)))
+
+  zvawr <- log(wr) / sqrt(siglog / n)
+  pvawr <- 2 * pnorm(abs(zvawr), lower.tail = FALSE)
 
   results <- list()
-  results$stat_wr <- zwr
+  results$wr <- wr
+  results$ci_wr <- wci
+  results$zv_wr <- zvawr
   results$pval_wr <- pvawr
 
   results
-
 
 }
 
