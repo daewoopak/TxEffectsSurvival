@@ -62,13 +62,9 @@ print.wr.test <- function(x, ...) {
   new_wrlin_ar_f <- sprintf(digit, new_wrlin_ar)
   new_pwrlin_ar_f <- display_p(sprintf(digitp, new_pwrlin_ar))
 
-
-  new_wr0 <- x$wrtest0$wr
-  new_ci_wr0 <- x$wrtest0$ci_wr
-  new_zv_wr0 <- x$wrtest0$zv_wr
+  new_stat_wr0 <- x$wrtest0$stat_wr
   new_pval_wr0 <- x$wrtest0$pval_wr
-  new_wr0_f <- sprintf(digit, new_wr0)
-  new_zv_wr0_f <- sprintf(digit, new_zv_wr0)
+  new_stat_wr0_f <- sprintf(digit, new_stat_wr0)
   new_pval_wr0_f <- display_p(sprintf(digitp, new_pval_wr0))
 
 
@@ -107,12 +103,8 @@ print.wr.test <- function(x, ...) {
   cat(sprintf("  [%-5s]  statistic = %s,  p-value %s\n", "ITCH", new_mxf[4], new_pvalmxf[4]))
 
   cat(paste("\n>> Chi-squred test: statistic = ", chi, ", p-value ", pvachi, sep = ""), "\n")
-  cat(sprintf("\n>> Win ratio test:\n"))
-  cat(sprintf("   Estimate = %.3f, Statistic = %s, p-value = %s\n",
-              new_wr0, new_zv_wr0_f, new_pval_wr0_f))
-  cat(sprintf("   *%g%% CI(log transformation used): (%.3f, %.3f)\n", ci_level, new_ci_wr0[1], new_ci_wr0[2]))
-
-  cat(paste("\n>> Log-rank test using time to first event: statistic = ", logrank_statf, ", p-value ", logrank_pvalf, sep = ""), "\n")
+  cat(paste(">> Win ratio test: Chisq.statistic = ", new_stat_wr0_f, ", p-value ", new_pval_wr0_f, sep = ""), "\n")
+  cat(paste(">> Log-rank test using time to first event: statistic = ", logrank_statf, ", p-value ", logrank_pvalf, sep = ""), "\n")
   cat(strrep("-", len), "\n\n")
 
   cat(paste("III. ----------- < Confidence Intervals (", ci_level, "% CI*) > -----------------------------", sep = ""), "\n")
